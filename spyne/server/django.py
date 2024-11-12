@@ -72,6 +72,17 @@ class DjangoApplication(WsgiApplication):
 
         environ = request.META.copy()
 
+        length = str(environ.get('CONTENT_LENGTH', self.max_content_length))
+        istream = environ.get('wsgi.input')
+
+        if len(length) == 0:
+            length = 0
+        else:
+            length = int(length)
+
+        if istream._pos == length:
+            environ['wsgi.body'] = request.body
+
         # FIXME: No idea what these two did.
         #        They were commented out to fix compatibility issues with
         #        Django-1.2.x

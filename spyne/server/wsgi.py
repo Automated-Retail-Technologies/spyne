@@ -535,31 +535,41 @@ class WsgiApplication(HttpBase):
         return self.__wsgi_input_to_iterable(http_env), charset
 
     def __wsgi_input_to_iterable(self, http_env):
-        istream = http_env.get('wsgi.input')
+        m_data = http_env.get('wsgi.body')
 
-        length = str(http_env.get('CONTENT_LENGTH', self.max_content_length))
-        if len(length) == 0:
-            length = 0
+        if m_data is not None:
+            if m_data == 'ND':
+                return
+            else:
+                http_env['wsgi.body'] = 'ND'
+                yield m_data
         else:
-            length = int(length)
+            istream = http_env.get('wsgi.input')
 
-        if length > self.max_content_length:
-            raise RequestTooLongError()
-        bytes_read = 0
+            length = str(http_env.get('CONTENT_LENGTH', self.max_content_length))
+            if len(length) == 0:
+                length = 0
+            else:
+                length = int(length)
 
-        while bytes_read < length:
-            bytes_to_read = min(self.block_length, length - bytes_read)
-
-            if bytes_to_read + bytes_read > self.max_content_length:
+            if length > self.max_content_length:
                 raise RequestTooLongError()
+            bytes_read = 0
 
-            data = istream.read(bytes_to_read)
-            if data is None or len(data) == 0:
-                break
+            while bytes_read < length:
+                bytes_to_read = min(self.block_length, length - bytes_read)
 
-            bytes_read += len(data)
+                if bytes_to_read + bytes_read > self.max_content_length:
+                    raise RequestTooLongError()
 
-            yield data
+                data = istream.read(bytes_to_read)
+                if data is None or len(data) == 0:
+                    break
+
+                bytes_read += len(data)
+
+                http_env['wsgi.input.data'] = data
+                yield data
 
     def decompose_incoming_envelope(self, prot, ctx, message):
         """This function is only called by the HttpRpc protocol to have the wsgi
