@@ -72,19 +72,10 @@ class DjangoApplication(WsgiApplication):
 
         environ = request.META.copy()
 
-        length = str(environ.get('CONTENT_LENGTH', self.max_content_length))
-        istream = environ.get('wsgi.input')
-
-        if len(length) == 0:
-            length = 0
-        else:
-            length = int(length)
-
-        print('[VMS] istream', istream)
-        print('[VMS] istreamType', type(istream))
-
-        if hasattr(istream, '_pos') and istream._pos == length:
+        if hasattr(request, 'body'):
             environ['wsgi.body'] = request.body
+            print('[VMS] body', request.body)
+            print('[VMS] bodyType', type(request.body))
 
         # FIXME: No idea what these two did.
         #        They were commented out to fix compatibility issues with
