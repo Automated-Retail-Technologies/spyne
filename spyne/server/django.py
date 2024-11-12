@@ -80,7 +80,10 @@ class DjangoApplication(WsgiApplication):
         else:
             length = int(length)
 
-        if istream._pos == length:
+        print('[VMS] istream', istream)
+        print('[VMS] istreamType', type(istream))
+
+        if hasattr(istream, '_pos') and istream._pos == length:
             environ['wsgi.body'] = request.body
 
         # FIXME: No idea what these two did.
