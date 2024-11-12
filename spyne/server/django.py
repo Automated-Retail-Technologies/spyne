@@ -74,8 +74,6 @@ class DjangoApplication(WsgiApplication):
 
         if hasattr(request, 'body'):
             environ['wsgi.body'] = request.body
-            print('[VMS] body', request.body)
-            print('[VMS] bodyType', type(request.body))
 
         # FIXME: No idea what these two did.
         #        They were commented out to fix compatibility issues with
